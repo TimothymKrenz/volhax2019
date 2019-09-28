@@ -7,8 +7,23 @@ This is a temporary script file.
 
 import argparse
 import numpy as np
-import soundfile as sf
+from pydub import AudioSegment as As
 import matplotlib.pyplot as plt
+
+def return_data(file):
+    '''
+    Input an audio file of any type and return a numpy array and the sample rate.
+    '''
+    dtype_dict = {
+        1: np.int8,
+        2: np.int16,
+        4: np.int32
+    }
+    dtype = dtype_dict[file.sample_width]
+    array = np.array(file.get_array_of_samples(), dtype=dtype)
+    sample_rate = file.frame_rate
+
+    return array, sample_rate
 
 parser = argparse.ArgumentParser(description='Something, I dunno, more useful')
 parser.add_argument('file', type=str, help='Name of input file')
@@ -16,12 +31,13 @@ parser.add_argument('--tempo', type=int, default=120, help='Choose tempo of soun
 parser.add_argument('--meter', type=int, nargs=2, default=[4,4], help='Allows selection of the meter')
 args=parser.parse_args()
 file=args.file
+file_b = As.from_file(file)
 bpm=args.tempo
 
 basis=4 #bottom
 beats=4 #top
 
-data, samplerate = sf.read(file)
+data, samplerate = return_data(file_b)
 
 bps=bpm/60
 spb=1/bps
@@ -31,8 +47,6 @@ npb = spb * samplerate
 npb_over = npb+tolerance
 npb_under = npb-tolerance
 
-
-data=np.array(data[:,0])
 xer = np.arange(1,len(data)+1)
 
 data_rectify = np.abs(data)
