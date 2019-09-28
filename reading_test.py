@@ -10,14 +10,16 @@ import numpy as np
 import soundfile as sf
 import matplotlib.pyplot as plt
 
-parser = argparse.ArgumentParser(description='Hackathon BABYYYYYYYY')
+parser = argparse.ArgumentParser(description='Something, I dunno, more useful')
 parser.add_argument('file', type=str, help='Name of input file')
-
+parser.add_argument('--tempo', type=int, default=120, help='Choose tempo of soundfile')
+parser.add_argument('--meter', type=int, nargs=2, default=[4,4], help='Allows selection of the meter')
 args=parser.parse_args()
 file=args.file
-bpm=120
-measure=4
-beats=4
+bpm=args.tempo
+
+basis=4 #bottom
+beats=4 #top
 
 data, samplerate = sf.read(file)
 
@@ -36,15 +38,15 @@ xer = np.arange(1,len(data)+1)
 data_rectify = np.abs(data)
 data_plot = np.ma.masked_less(data_rectify, 0.4)
 
-plt.style.use('classic')
-plt.rc('axes')
-plt.rc('lines', linewidth=1)
-fig=plt.figure()
-plt.ylim((-1,1))
+#plt.style.use('classic')
+#plt.rc('axes')
+#plt.rc('lines', linewidth=1)
+#fig=plt.figure()
+#plt.ylim((-1,1))
 #plt.xlim((65000,66000))
-plt.plot(xer, data_plot)
+#plt.plot(xer, data_plot)
+#plt.show()
 
-#spike_data = np.array([])
 spike_time = np.array([])
 flag = False
 check = 0
@@ -52,14 +54,13 @@ for n,x in zip(xer,data_plot):
     if n > (check+(.05*samplerate)):
         flag = False    
     if x and not flag:
-        #spike_data = np.append(spike_data, x)
         spike_time = np.append(spike_time, n)
         flag = True
         check = n
 
 spike_time = np.subtract(spike_time, spike_time[0])
 
-info = "\\header{ title=\""+file+"\"}\n\\relative{\\time 4/4\n"
+info = "\\header{ title=\""+file+"\"}\n\\relative{\\time "+str(beats)+"/"+str(basis)+"\n"
 
 
 
@@ -72,9 +73,15 @@ for x in range(len(spike_time)-1):
     if (gap > npb_under*4) and (gap < npb_over*4):
         info = info + "1"
         total += 4
+    elif (gap > npb_under*3) and (gap < npb_over*3):
+        info = info + "2."
+        total += 3
     elif (gap > npb_under*2) and (gap < npb_over*2):
         info = info + "2"
         total += 2
+    elif (gap > npb_under*1.5) and (gap < npb_over*1.5):
+        info = info + "1."
+        total += 1.5
     elif (gap > npb_under) and (gap < npb_over):
         info = info + "4"
         total += 1
@@ -86,10 +93,14 @@ for x in range(len(spike_time)-1):
         total += .25
     info = info + " "
     
-if (total%4 != 0):
-    rmdr = 4-(total%4)
-    if rmdr == 2:
+if (total%beats != 0):
+    rmdr = beats-(total%beats)
+    if rmdr == 3:
+        info = info + "c2."
+    elif rmdr == 2:
         info = info + "c2"
+    elif rmdr == 1.5:
+        info = info + "c4."
     elif rmdr == 1:
         info = info + "c4"
     elif rmdr == .5:
@@ -100,4 +111,3 @@ if (total%4 != 0):
 info = info + "}"
     
 print(info)
-#plt.show()
