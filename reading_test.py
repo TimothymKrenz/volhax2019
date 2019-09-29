@@ -7,9 +7,9 @@ This is a temporary script file.
 
 import argparse
 import numpy as np
-import soundfile as sf
+#import soundfile as sf
 from pydub import AudioSegment as As
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def return_data(file):
     '''
@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser(description='Something, I dunno, more useful')
 parser.add_argument('file', type=str, help='Name of input file')
 parser.add_argument('--tempo', type=int, default=120, help='Choose tempo of soundfile')
 parser.add_argument('--meter', type=int, nargs=2, default=(4,4), help='Allows selection of the meter')
+
 args=parser.parse_args()
 file=args.file
 file_b = As.from_file(file)
@@ -55,7 +56,7 @@ npb_under = npb-tolerance
 data_rectify = np.abs(data)
 data_plot = np.ma.masked_less(data_rectify, 0.4)
 
-#xer = np.arange(1,len(data)+1)
+
 #plt.style.use('classic')
 #plt.rc('axes')
 #plt.rc('lines', linewidth=1)
@@ -65,6 +66,7 @@ data_plot = np.ma.masked_less(data_rectify, 0.4)
 #plt.plot(xer, data_plot)
 #plt.show()
 
+xer = np.arange(1,len(data)+1)
 spike_time = np.array([])
 flag = False
 check = 0
@@ -77,7 +79,6 @@ for n,x in zip(xer,data_plot):
         check = n
 
 spike_time = np.subtract(spike_time, spike_time[0])
-
 
 info = "\\header{ title=\""+file+"\"}\n\\relative{\\time "+str(beats)+"/"+str(basis)+"\n"
 
@@ -103,9 +104,15 @@ for x in range(len(spike_time)-1):
     elif (gap > npb_under) and (gap < npb_over):
         info = info + "4"
         total += 1
+    elif (gap > npb_under*.75) and (gap < npb_over*.75):
+        info = info + "4."
+        total += .75
     elif (gap > npb_under*.5) and (gap < npb_over*.5):
         info = info + "8"
         total += .5
+    elif (gap > npb_under*.375) and (gap < npb_over*.375):
+        info = info + "16."
+        total += .375
     elif (gap > npb_under*.25) and (gap < npb_over*.25):
         info = info + "16"
         total += .25
@@ -113,7 +120,9 @@ for x in range(len(spike_time)-1):
     
 if (total%beats != 0):
     rmdr = beats-(total%beats)
-    if rmdr == 3:
+    if rmdr == 4:
+        info = info + "c1"
+    elif rmdr == 3:
         info = info + "c2."
     elif rmdr == 2:
         info = info + "c2"
@@ -121,8 +130,12 @@ if (total%beats != 0):
         info = info + "c4."
     elif rmdr == 1:
         info = info + "c4"
+    elif rmdr == .75:
+        info = info + "c4."
     elif rmdr == .5:
         info = info + "c8"
+    elif rmdr == .375:
+        info = info + "c16."
     elif rmdr == .25:
         info = info + "c16"
         
