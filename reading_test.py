@@ -22,7 +22,7 @@ def return_data(file):
     }
     dtype = dtype_dict[file.sample_width]
     array = np.array(file.get_array_of_samples(), dtype=dtype)
-    sample_rate = file.frame_rate * 2
+    sample_rate = file.frame_rate
     max = np.amax(array)
     array = np.divide(array, max)
     return array, sample_rate
@@ -55,7 +55,7 @@ npb_under = npb-tolerance
 
 data_rectify = np.abs(data)
 data_plot = np.ma.masked_less(data_rectify, 0.4)
-
+xer = np.arange(1,len(data)+1)
 
 #plt.style.use('classic')
 #plt.rc('axes')
@@ -66,12 +66,12 @@ data_plot = np.ma.masked_less(data_rectify, 0.4)
 #plt.plot(xer, data_plot)
 #plt.show()
 
-xer = np.arange(1,len(data)+1)
+
 spike_time = np.array([])
 flag = False
 check = 0
 for n,x in zip(xer,data_plot):
-    if n > (check+(.05*samplerate)):
+    if n > (check+(.1*samplerate)):
         flag = False    
     if x and not flag:
         spike_time = np.append(spike_time, n)
