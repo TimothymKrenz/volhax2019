@@ -99,13 +99,13 @@ for x in range(len(spike_time)-1):
         info = info + "2"
         total += 2
     elif (gap > npb_under*1.5) and (gap < npb_over*1.5):
-        info = info + "1."
+        info = info + "4."
         total += 1.5
     elif (gap > npb_under) and (gap < npb_over):
         info = info + "4"
         total += 1
     elif (gap > npb_under*.75) and (gap < npb_over*.75):
-        info = info + "4."
+        info = info + "8."
         total += .75
     elif (gap > npb_under*.5) and (gap < npb_over*.5):
         info = info + "8"
@@ -131,7 +131,7 @@ if (total%beats != 0):
     elif rmdr == 1:
         info = info + "c4"
     elif rmdr == .75:
-        info = info + "c4."
+        info = info + "c8."
     elif rmdr == .5:
         info = info + "c8"
     elif rmdr == .375:
