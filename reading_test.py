@@ -7,6 +7,7 @@ This is a temporary script file.
 
 import argparse
 import numpy as np
+import soundfile as sf
 from pydub import AudioSegment as As
 import matplotlib.pyplot as plt
 
@@ -21,23 +22,27 @@ def return_data(file):
     }
     dtype = dtype_dict[file.sample_width]
     array = np.array(file.get_array_of_samples(), dtype=dtype)
-    sample_rate = file.frame_rate
-
+    sample_rate = file.frame_rate * 2
+    max = np.amax(array)
+    array = np.divide(array, max)
     return array, sample_rate
 
 parser = argparse.ArgumentParser(description='Something, I dunno, more useful')
 parser.add_argument('file', type=str, help='Name of input file')
 parser.add_argument('--tempo', type=int, default=120, help='Choose tempo of soundfile')
-parser.add_argument('--meter', type=int, nargs=2, default=[4,4], help='Allows selection of the meter')
+parser.add_argument('--meter', type=int, nargs=2, default=(4,4), help='Allows selection of the meter')
 args=parser.parse_args()
 file=args.file
 file_b = As.from_file(file)
 bpm=args.tempo
+meter = args.meter
 
-basis=4 #bottom
-beats=4 #top
+basis=meter[1] #bottom
+beats=meter[0] #top
 
 data, samplerate = return_data(file_b)
+#data, samplerate = sf.read(file)
+#data = np.array(data[:,0])
 
 bps=bpm/60
 spb=1/bps
@@ -47,11 +52,10 @@ npb = spb * samplerate
 npb_over = npb+tolerance
 npb_under = npb-tolerance
 
-xer = np.arange(1,len(data)+1)
-
 data_rectify = np.abs(data)
 data_plot = np.ma.masked_less(data_rectify, 0.4)
 
+#xer = np.arange(1,len(data)+1)
 #plt.style.use('classic')
 #plt.rc('axes')
 #plt.rc('lines', linewidth=1)
@@ -74,8 +78,8 @@ for n,x in zip(xer,data_plot):
 
 spike_time = np.subtract(spike_time, spike_time[0])
 
-info = "\\header{ title=\""+file+"\"}\n\\relative{\\time "+str(beats)+"/"+str(basis)+"\n"
 
+info = "\\header{ title=\""+file+"\"}\n\\relative{\\time "+str(beats)+"/"+str(basis)+"\n"
 
 
 total=0
